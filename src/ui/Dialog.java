@@ -1,14 +1,16 @@
 package ui;
 
 import model.Patient;
+import utils.Logger;
 
 import javax.swing.*;
 import java.awt.*;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDate;
 
-public class PatientDialog extends JDialog {
+public class Dialog extends JDialog {
 
     private Patient patient;
 
@@ -20,14 +22,15 @@ public class PatientDialog extends JDialog {
     private final JTextField tfStrasse = new JTextField(20);
     private final JTextField tfPlz = new JTextField(6);
     private final JTextField tfOrt = new JTextField(15);
-    private final JTextField tfBundeslandID = new JTextField(5);
+    private final JTextField tfBundeslandName = new JTextField(5);
     private final JTextField tfTelefon = new JTextField(15);
-    private final JTextField tfGeschlechtID = new JTextField(5);
-    private final JTextField tfKrankenkasseID = new JTextField(5);
+    private final JTextField tfGeschlechtName = new JTextField(5);
+    private final JTextField tfKrankenkasseName = new JTextField(5);
     private final JTextField tfSonstiges = new JTextField(20);
 
-    public PatientDialog(Frame owner, String title, Patient p) {
+    public Dialog(Frame owner, String title, Patient p) {
         super(owner, title, true);  // modal
+        Logger.log(Logger.LogLevel.INFO, "Dialog geöffnet: " + title);
         this.patient = (p != null) ? clonePatient(p) : null; // Kopie, um Original nicht zu verändern
 
         // Panels
@@ -46,14 +49,14 @@ public class PatientDialog extends JDialog {
         mainPanel.add(tfPlz);
         mainPanel.add(new JLabel("Ort:"));
         mainPanel.add(tfOrt);
-        mainPanel.add(new JLabel("Bundesland-ID:"));
-        mainPanel.add(tfBundeslandID);
+        mainPanel.add(new JLabel("Bundesland:"));
+        mainPanel.add(tfBundeslandName);
         mainPanel.add(new JLabel("Telefon:"));
         mainPanel.add(tfTelefon);
-        mainPanel.add(new JLabel("Geschlecht-ID:"));
-        mainPanel.add(tfGeschlechtID);
-        mainPanel.add(new JLabel("Krankenkasse-ID:"));
-        mainPanel.add(tfKrankenkasseID);
+        mainPanel.add(new JLabel("Geschlecht:"));
+        mainPanel.add(tfGeschlechtName);
+        mainPanel.add(new JLabel("Krankenkasse:"));
+        mainPanel.add(tfKrankenkasseName);
         mainPanel.add(new JLabel("Sonstiges:"));
         mainPanel.add(tfSonstiges);
 
@@ -71,6 +74,7 @@ public class PatientDialog extends JDialog {
 
         // Alte Daten setzen (falls Bearbeiten)
         if (p != null) {
+            Logger.log(Logger.LogLevel.INFO, "Bearbeiten-Modus für Patient ID: " + p.getPatientID());
             tfVorname.setText(p.getVorname());
             tfNachname.setText(p.getNachname());
             tfAnrede.setText(p.getAnrede());
@@ -78,22 +82,25 @@ public class PatientDialog extends JDialog {
             tfStrasse.setText(p.getStrasse());
             tfPlz.setText(p.getPlz());
             tfOrt.setText(p.getOrt());
-            tfBundeslandID.setText(String.valueOf(p.getBundeslandID()));
+            tfBundeslandName.setText(String.valueOf(p.getBundeslandName()));
             tfTelefon.setText(p.getTelefon());
-            tfGeschlechtID.setText(String.valueOf(p.getGeschlechtID()));
-            tfKrankenkasseID.setText(String.valueOf(p.getKrankenkasseID()));
+            tfGeschlechtName.setText(String.valueOf(p.getGeschlechtName()));
+            tfKrankenkasseName.setText(String.valueOf(p.getKrankenkasseName()));
             tfSonstiges.setText(p.getSonstiges());
         }
 
         // Event-Handling
         btnOk.addActionListener(e -> {
+            Logger.log(Logger.LogLevel.INFO, "OK-Button geklickt.");
             if (validateInputs()) {
                 savePatientData();  // speichert in this.patient
+                Logger.log(Logger.LogLevel.INFO, "Patientendaten gespeichert: " + patient);
                 dispose();
             }
         });
 
         btnCancel.addActionListener(e -> {
+            Logger.log(Logger.LogLevel.INFO, "Abbrechen-Button geklickt.");
             patient = null; // Abbruch = kein Resultat
             dispose();
         });
@@ -105,6 +112,7 @@ public class PatientDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                Logger.log(Logger.LogLevel.INFO, "Dialog geschlossen (Abbruch).");
                 patient = null;
             }
         });
@@ -112,6 +120,7 @@ public class PatientDialog extends JDialog {
 
     // Beim Bearbeiten wollen wir nicht versehentlich am Original herumbasteln
     private Patient clonePatient(Patient p) {
+        Logger.log(Logger.LogLevel.INFO, "Patient wird geklont: ID=" + p.getPatientID());
         Patient copy = new Patient();
         copy.setPatientID(p.getPatientID());
         copy.setVorname(p.getVorname());
@@ -121,34 +130,31 @@ public class PatientDialog extends JDialog {
         copy.setStrasse(p.getStrasse());
         copy.setPlz(p.getPlz());
         copy.setOrt(p.getOrt());
-        copy.setBundeslandID(p.getBundeslandID());
+        copy.setBundeslandName(p.getBundeslandName());
         copy.setTelefon(p.getTelefon());
-        copy.setGeschlechtID(p.getGeschlechtID());
-        copy.setKrankenkasseID(p.getKrankenkasseID());
+        copy.setGeschlechtName(p.getGeschlechtName());
+        copy.setKrankenkasseName(p.getKrankenkasseName());
         copy.setSonstiges(p.getSonstiges());
         return copy;
     }
 
     // Eingaben checken
     private boolean validateInputs() {
+        Logger.log(Logger.LogLevel.INFO, "Eingaben werden validiert.");
         if (tfVorname.getText().trim().isEmpty() || tfNachname.getText().trim().isEmpty()) {
+            Logger.log(Logger.LogLevel.WARN, "Vorname oder Nachname fehlt.");
             JOptionPane.showMessageDialog(this, "Vorname und Nachname dürfen nicht leer sein!",
                     "Ungültige Eingabe", JOptionPane.WARNING_MESSAGE);
             return false;
         }
-        try {
-            Integer.parseInt(tfBundeslandID.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "BundeslandID muss eine Zahl sein!",
-                    "Ungültige Eingabe", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
+
         return true;
     }
 
 
     // Patient-Objekt mit den Dialogwerten füllen
     private void savePatientData() {
+        Logger.log(Logger.LogLevel.INFO, "Patientendaten werden übernommen.");
         if (patient == null) {
             patient = new Patient();
         }
@@ -157,41 +163,27 @@ public class PatientDialog extends JDialog {
         patient.setAnrede(tfAnrede.getText().trim());
 
         String geburtsdatumText = tfGeburtsdatum.getText().trim();
-        if (!geburtsdatumText.isEmpty()) {
-            LocalDate date = LocalDate.parse(geburtsdatumText); // Exception falls Format falsch
-            patient.setGeburtsdatum(date);
-        } else {
+            if (!geburtsdatumText.isEmpty()) {
+                try {
+                    LocalDate date = LocalDate.parse(geburtsdatumText); // Exception falls Format falsch
+                    patient.setGeburtsdatum(date);
+                } catch (Exception e) {
+                    Logger.log(Logger.LogLevel.ERROR, "Ungültiges Geburtsdatum-Format.", e);
+                }
+            } else {
             patient.setGeburtsdatum(null);
         }
 
         patient.setStrasse(tfStrasse.getText().trim());
         patient.setPlz(tfPlz.getText().trim());
         patient.setOrt(tfOrt.getText().trim());
-
-        try {
-            patient.setBundeslandID(Integer.parseInt(tfBundeslandID.getText().trim()));
-        } catch (NumberFormatException e) {
-            patient.setBundeslandID(0);
-        }
-
+        patient.setBundeslandName(tfBundeslandName.getText().trim());
         patient.setTelefon(tfTelefon.getText().trim());
-
-        try {
-            patient.setGeschlechtID(Integer.parseInt(tfGeschlechtID.getText().trim()));
-        } catch (NumberFormatException e) {
-            patient.setGeschlechtID(1); // default?
-        }
-
-        try {
-            patient.setKrankenkasseID(Integer.parseInt(tfKrankenkasseID.getText().trim()));
-        } catch (NumberFormatException e) {
-            patient.setKrankenkasseID(0);
-        }
-
+        patient.setGeschlechtName(tfGeschlechtName.getText().trim());
+        patient.setKrankenkasseName(tfKrankenkasseName.getText().trim());
         patient.setSonstiges(tfSonstiges.getText().trim());
     }
 
-    /** Gibt das neue/aktualisierte Patient-Objekt zurück oder null bei Abbruch */
     public Patient getPatient() {
         return patient;
     }
