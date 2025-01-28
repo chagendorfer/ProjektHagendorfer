@@ -14,19 +14,34 @@ public class DBConnection {
     private static final String USER = "root";
     private static final String PASSWORD = "root";
 
+    private static Connection connection;
+
     /**
      * Erstellt eine Verbindung zur Datenbank.
      *
      * @return Eine Connection zur Datenbank.
      */
-    public static Connection connect() {
-        try {
-            Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            Logger.log(Logger.LogLevel.INFO, "Verbindung zur Datenbank hergestellt.");
-            return connection;
-        } catch (SQLException e) {
-            Logger.log(Logger.LogLevel.ERROR, "Fehler beim Aufbau der Datenbankverbindung.", e);
-            throw new RuntimeException("Datenbankverbindung fehlgeschlagen", e);
+    public static Connection getConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            Logger.log(Logger.LogLevel.INFO, "Verbindung zur Datenbank wird hergestellt.");
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        }
+        return connection;
+    }
+
+    /**
+     * Schließt die Verbindung zur Datenbank, falls sie geöffnet ist.
+     */
+    public static void closeConnection() {
+        if (connection != null) {
+            try {
+                if (!connection.isClosed()) {
+                    connection.close();
+                    Logger.log(Logger.LogLevel.INFO, "Datenbankverbindung geschlossen.");
+                }
+            } catch (SQLException e) {
+                Logger.log(Logger.LogLevel.ERROR, "Fehler beim Schließen der Datenbankverbindung.", e);
+            }
         }
     }
 }

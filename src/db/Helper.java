@@ -3,19 +3,23 @@ package db;
 import model.Patient;
 import utils.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-
+import java.sql.*;
 
 public class Helper {
-    public static void setPatientParameters(PreparedStatement stmt, Patient patient) throws SQLException {
+
+    /**
+     * Setzt die Parameter eines PreparedStatements basierend auf einem Patient-Objekt.
+     *
+     * @param stmt    Das PreparedStatement.
+     * @param patient Das Patient-Objekt.
+     * @throws SQLException Falls ein SQL-Fehler auftritt.
+     */
+    public static PreparedStatement setPatientParameters(PreparedStatement stmt, Patient patient) throws SQLException {
         try {
             stmt.setString(1, patient.getVorname());
             stmt.setString(2, patient.getNachname());
             stmt.setString(3, patient.getAnrede());
-            stmt.setDate(4, java.sql.Date.valueOf(patient.getGeburtsdatum()));
+            stmt.setDate(4, patient.getGeburtsdatum() != null ? java.sql.Date.valueOf(patient.getGeburtsdatum()) : null);
             stmt.setString(5, patient.getStrasse());
             stmt.setString(6, patient.getPlz());
             stmt.setString(7, patient.getOrt());
@@ -29,30 +33,60 @@ public class Helper {
             Logger.log(Logger.LogLevel.ERROR, "Fehler beim Setzen der SQL-Parameter für Patient.", e);
             throw e;
         }
+        return stmt;
     }
 
-    public static Patient mapResultSetToPatient(ResultSet rs, Connection con) throws SQLException {
+    /**
+     * Mappt ein ResultSet auf ein Patient-Objekt.
+     *
+     * @param rs            Das ResultSet, das Daten aus der Datenbank enthält.
+     * @param patient       Ein existierendes Patient-Objekt oder null.
+     * @param connection    Die aktive Datenbankverbindung.
+     * @return Ein Patient-Objekt, das mit den Daten aus dem ResultSet befüllt ist.
+     * @throws SQLException Wenn ein Fehler beim Lesen der Daten auftritt.
+     */
+    public static Patient mapResultSetToPatient(ResultSet rs, Patient patient, Connection connection) throws SQLException {
         try {
             Logger.log(Logger.LogLevel.DEBUG, "Patient wird aus ResultSet gemappt.");
-            Patient patient = new Patient();
-            patient.setPatientID(rs.getInt("patientID"));
-            patient.setVorname(rs.getString("vorname"));
-            patient.setNachname(rs.getString("nachname"));
-            patient.setAnrede(rs.getString("anrede"));
-            patient.setGeburtsdatum(rs.getDate("geburtsdatum").toLocalDate());
-            patient.setStrasse(rs.getString("strasse"));
-            patient.setPlz(rs.getString("plz"));
-            patient.setOrt(rs.getString("ort"));
-            patient.setBundeslandID(rs.getInt("bundeslandID"));
-            patient.setTelefon(rs.getString("telefon"));
-            patient.setGeschlechtID(rs.getInt("geschlechtID"));
-            patient.setKrankenkasseID(rs.getInt("krankenkasseID"));
-            patient.setSonstiges(rs.getString("sonstiges"));
+            Logger.log(Logger.LogLevel.DEBUG, "Eingehendes Patient-Objekt: " + (patient == null ? "null" : patient.toString()));
+            // Falls kein bestehendes Patient-Objekt übergeben wird, ein neues erstellen
+            if (patient == null) {
+                patient = new Patient();
+                Logger.log(Logger.LogLevel.WARN, "Es wird ein neuer Patient erstellt.");
+            }
+            if (patient.getPatientID() != 0) {
+                Logger.log(Logger.LogLevel.WARN, "Ein bereits initialisierter Patient wird überschrieben. Überprüfen Sie den Aufruf!");
+            }
 
-            // IDs in Namen übersetzen
-            patient.setBundeslandName(getBundeslandName(con, patient.getBundeslandID()));
-            patient.setGeschlechtName(getGeschlechtName(con, patient.getGeschlechtID()));
-            patient.setKrankenkasseName(getKrankenkasseName(con, patient.getKrankenkasseID()));
+            // Werte setzen nur, wenn sie aktuell leer sind
+            if (patient.getPatientID() == 0) patient.setPatientID(rs.getInt("patientID"));
+            if (patient.getVorname() == null) patient.setVorname(rs.getString("vorname"));
+            if (patient.getNachname() == null) patient.setNachname(rs.getString("nachname"));
+            if (patient.getAnrede() == null) patient.setAnrede(rs.getString("anrede"));
+            if (patient.getGeburtsdatum() == null && rs.getDate("geburtsdatum") != null) {
+                patient.setGeburtsdatum(rs.getDate("geburtsdatum").toLocalDate());
+            }
+            if (patient.getStrasse() == null) patient.setStrasse(rs.getString("strasse"));
+            if (patient.getPlz() == null) patient.setPlz(rs.getString("plz"));
+            if (patient.getOrt() == null) patient.setOrt(rs.getString("ort"));
+            if (patient.getBundeslandID() == 0) patient.setBundeslandID(rs.getInt("bundeslandID"));
+            if (patient.getTelefon() == null) patient.setTelefon(rs.getString("telefon"));
+            if (patient.getGeschlechtID() == 0) patient.setGeschlechtID(rs.getInt("geschlechtID"));
+            if (patient.getKrankenkasseID() == 0) patient.setKrankenkasseID(rs.getInt("krankenkasseID"));
+            if (patient.getSonstiges() == null) patient.setSonstiges(rs.getString("sonstiges"));
+
+            // IDs in Namen übersetzen (nur falls noch nicht gesetzt)
+            if (connection != null) {
+                if (patient.getBundeslandName() == null) {
+                    patient.setBundeslandName(getBundeslandName(connection, patient.getBundeslandID()));
+                }
+                if (patient.getGeschlechtName() == null) {
+                    patient.setGeschlechtName(getGeschlechtName(connection, patient.getGeschlechtID()));
+                }
+                if (patient.getKrankenkasseName() == null) {
+                    patient.setKrankenkasseName(getKrankenkasseName(connection, patient.getKrankenkasseID()));
+                }
+            }
 
             Logger.log(Logger.LogLevel.DEBUG, "Patient erfolgreich gemappt: " + patient);
             return patient;
@@ -61,60 +95,67 @@ public class Helper {
             throw e;
         }
     }
-    public static String getBundeslandName(Connection con, int bundeslandID) throws SQLException {
+
+    /**
+     * Gibt den Namen eines Bundeslandes basierend auf seiner ID zurück.
+     *
+     * @param connection    Die aktive Datenbankverbindung.
+     * @param bundeslandID  Die ID des Bundeslandes.
+     * @return Der Name des Bundeslandes.
+     * @throws SQLException Wenn ein Fehler beim Abrufen des Namens auftritt.
+     */
+    public static String getBundeslandName(Connection connection, int bundeslandID) throws SQLException {
         String sql = "SELECT Bezeichnung FROM bundesland WHERE BundeslandID = ?";
-        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, bundeslandID);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String name = rs.getString("Bezeichnung");
-                    Logger.log(Logger.LogLevel.DEBUG, "Bundesland-Name gefunden: " + name);
-                    return name;
+                    return rs.getString("Bezeichnung");
                 }
             }
-        } catch (SQLException e) {
-            Logger.log(Logger.LogLevel.ERROR, "Fehler beim Abrufen des Bundesland-Namens für ID: " + bundeslandID, e);
-            throw e;
         }
-        Logger.log(Logger.LogLevel.WARN, "Bundesland-ID nicht gefunden: " + bundeslandID);
         return "Unbekannt";
     }
 
-    public static String getGeschlechtName(Connection con, int geschlechtID) throws SQLException {
+    /**
+     * Gibt den Namen eines Geschlechts basierend auf seiner ID zurück.
+     *
+     * @param connection   Die aktive Datenbankverbindung.
+     * @param geschlechtID Die ID des Geschlechts.
+     * @return Der Name des Geschlechts.
+     * @throws SQLException Wenn ein Fehler beim Abrufen des Namens auftritt.
+     */
+    public static String getGeschlechtName(Connection connection, int geschlechtID) throws SQLException {
         String sql = "SELECT Bezeichnung FROM geschlecht WHERE GeschlechtID = ?";
-        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, geschlechtID);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String name = rs.getString("Bezeichnung");
-                    Logger.log(Logger.LogLevel.DEBUG, "Geschlecht-Name gefunden: " + name);
-                    return name;
+                    return rs.getString("Bezeichnung");
                 }
             }
-        } catch (SQLException e) {
-            Logger.log(Logger.LogLevel.ERROR, "Fehler beim Abrufen des Geschlecht-Namens für ID: " + geschlechtID, e);
-            throw e;
         }
-        Logger.log(Logger.LogLevel.WARN, "Geschlecht-ID nicht gefunden: " + geschlechtID);
         return "Unbekannt";
     }
 
-    public static String getKrankenkasseName(Connection con, int krankenkasseID) throws SQLException {
+    /**
+     * Gibt den Namen einer Krankenkasse basierend auf ihrer ID zurück.
+     *
+     * @param connection       Die aktive Datenbankverbindung.
+     * @param krankenkasseID   Die ID der Krankenkasse.
+     * @return Der Name der Krankenkasse.
+     * @throws SQLException Wenn ein Fehler beim Abrufen des Namens auftritt.
+     */
+    public static String getKrankenkasseName(Connection connection, int krankenkasseID) throws SQLException {
         String sql = "SELECT Bezeichnung FROM krankenkasse WHERE KrankenkasseID = ?";
-        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, krankenkasseID);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String name = rs.getString("Bezeichnung");
-                    Logger.log(Logger.LogLevel.DEBUG, "Krankenkasse-Name gefunden: " + name);
-                    return name;
+                    return rs.getString("Bezeichnung");
                 }
             }
-        } catch (SQLException e) {
-            Logger.log(Logger.LogLevel.ERROR, "Fehler beim Abrufen des Krankenkasse-Namens für ID: " + krankenkasseID, e);
-            throw e;
         }
-        Logger.log(Logger.LogLevel.WARN, "Krankenkasse-ID nicht gefunden: " + krankenkasseID);
         return "Unbekannt";
     }
 }

@@ -67,7 +67,6 @@ public class Patient {
     /**
      * Vollständiger Konstruktor mit allen Feldern.
      */
-    /*
     public Patient(int patientID, String vorname, String nachname, String anrede, LocalDate geburtsdatum, String strasse, String plz, String ort, int bundeslandID, String telefon, int geschlechtID, int krankenkasseID, String sonstiges) {
         this.patientID = patientID;
         this.vorname = vorname;
@@ -84,7 +83,6 @@ public class Patient {
         this.sonstiges = sonstiges;
         Logger.log(Logger.LogLevel.DEBUG, "Patient-Objekt erstellt: " + this);
     }
-     */
 
     // Getter und Setter mit vollständiger Dokumentation und Logging
     public int getPatientID() {
@@ -92,8 +90,10 @@ public class Patient {
     }
 
     public void setPatientID(int patientID) {
-        Logger.log(Logger.LogLevel.DEBUG, "PatientID geändert: " + this.patientID + " -> " + patientID);
-        this.patientID = patientID;
+        if (this.patientID == 0 || this.patientID != patientID) {
+            Logger.log(Logger.LogLevel.DEBUG, "PatientID geändert: " + this.patientID + " -> " + patientID);
+            this.patientID = patientID;
+        }
     }
 
     public String getVorname() {
@@ -101,8 +101,10 @@ public class Patient {
     }
 
     public void setVorname(String vorname) {
-        Logger.log(Logger.LogLevel.DEBUG, "Vorname geändert: " + this.vorname + " -> " + vorname);
-        this.vorname = vorname;
+        if (this.vorname == null || !this.vorname.equals(vorname)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Vorname geändert: " + this.vorname + " -> " + vorname);
+            this.vorname = vorname;
+        }
     }
 
     public String getNachname() {
@@ -110,8 +112,10 @@ public class Patient {
     }
 
     public void setNachname(String nachname) {
-        Logger.log(Logger.LogLevel.DEBUG, "Nachname geändert: " + this.nachname + " -> " + nachname);
-        this.nachname = nachname;
+        if (this.nachname == null || !this.nachname.equals(nachname)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Nachname geändert: " + this.nachname + " -> " + nachname);
+            this.nachname = nachname;
+        }
     }
 
     public String getAnrede() {
@@ -119,8 +123,10 @@ public class Patient {
     }
 
     public void setAnrede(String anrede) {
-        Logger.log(Logger.LogLevel.DEBUG, "Anrede geändert: " + this.anrede + " -> " + anrede);
-        this.anrede = anrede;
+        if (this.anrede == null || !this.anrede.equals(anrede)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Anrede geändert: " + this.anrede + " -> " + anrede);
+            this.anrede = anrede;
+        }
     }
 
     public LocalDate getGeburtsdatum() {
@@ -128,8 +134,10 @@ public class Patient {
     }
 
     public void setGeburtsdatum(LocalDate geburtsdatum) {
-        Logger.log(Logger.LogLevel.DEBUG, "Geburtsdatum geändert: " + this.geburtsdatum + " -> " + geburtsdatum);
-        this.geburtsdatum = geburtsdatum;
+        if (this.geburtsdatum == null || !this.geburtsdatum.equals(geburtsdatum)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Geburtsdatum geändert: " + this.geburtsdatum + " -> " + geburtsdatum);
+            this.geburtsdatum = geburtsdatum;
+        }
     }
 
     public String getStrasse() {
@@ -137,8 +145,10 @@ public class Patient {
     }
 
     public void setStrasse(String strasse) {
-        Logger.log(Logger.LogLevel.DEBUG, "Straße geändert: " + this.strasse + " -> " + strasse);
-        this.strasse = strasse;
+        if (this.strasse == null || !this.strasse.equals(strasse)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Straße geändert: " + this.strasse + " -> " + strasse);
+            this.strasse = strasse;
+        }
     }
 
     public String getPlz() {
@@ -146,8 +156,10 @@ public class Patient {
     }
 
     public void setPlz(String plz) {
-        Logger.log(Logger.LogLevel.DEBUG, "PLZ geändert: " + this.plz + " -> " + plz);
-        this.plz = plz;
+        if (this.plz == null || !this.plz.equals(plz)) {
+            Logger.log(Logger.LogLevel.DEBUG, "PLZ geändert: " + this.plz + " -> " + plz);
+            this.plz = plz;
+        }
     }
 
     public String getOrt() {
@@ -155,8 +167,10 @@ public class Patient {
     }
 
     public void setOrt(String ort) {
-        Logger.log(Logger.LogLevel.DEBUG, "Ort geändert: " + this.ort + " -> " + ort);
-        this.ort = ort;
+        if (this.ort == null || !this.ort.equals(ort)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Ort geändert: " + this.ort + " -> " + ort);
+            this.ort = ort;
+        }
     }
 
     public int getBundeslandID() {
@@ -164,8 +178,10 @@ public class Patient {
     }
 
     public void setBundeslandID(int bundeslandID) {
-        Logger.log(Logger.LogLevel.DEBUG, "BundeslandID geändert: " + this.bundeslandID + " -> " + bundeslandID);
-        this.bundeslandID = bundeslandID;
+        if (this.bundeslandID == 0 || this.bundeslandID != bundeslandID) {
+            Logger.log(Logger.LogLevel.DEBUG, "BundeslandID geändert: " + this.bundeslandID + " -> " + bundeslandID);
+            this.bundeslandID = bundeslandID;
+        }
     }
 
     public String getBundeslandName() {
@@ -173,8 +189,10 @@ public class Patient {
     }
 
     public void setBundeslandName(String bundeslandName) {
-        Logger.log(Logger.LogLevel.DEBUG, "BundeslandName geändert: " + this.bundeslandName + " -> " + bundeslandName);
-        this.bundeslandName = bundeslandName;
+        if (this.bundeslandName == null || !this.bundeslandName.equals(bundeslandName)) {
+            Logger.log(Logger.LogLevel.DEBUG, "BundeslandName geändert: " + this.bundeslandName + " -> " + bundeslandName);
+            this.bundeslandName = bundeslandName;
+        }
     }
 
     public String getTelefon() {
@@ -182,8 +200,10 @@ public class Patient {
     }
 
     public void setTelefon(String telefon) {
-        Logger.log(Logger.LogLevel.DEBUG, "Telefon geändert: " + this.telefon + " -> " + telefon);
-        this.telefon = telefon;
+        if (this.telefon == null || !this.telefon.equals(telefon)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Telefon geändert: " + this.telefon + " -> " + telefon);
+            this.telefon = telefon;
+        }
     }
 
     public int getGeschlechtID() {
@@ -191,8 +211,10 @@ public class Patient {
     }
 
     public void setGeschlechtID(int geschlechtID) {
-        Logger.log(Logger.LogLevel.DEBUG, "GeschlechtID geändert: " + this.geschlechtID + " -> " + geschlechtID);
-        this.geschlechtID = geschlechtID;
+        if (this.geschlechtID == 0 || this.geschlechtID != geschlechtID) {
+            Logger.log(Logger.LogLevel.DEBUG, "GeschlechtID geändert: " + this.geschlechtID + " -> " + geschlechtID);
+            this.geschlechtID = geschlechtID;
+        }
     }
 
     public String getGeschlechtName() {
@@ -200,8 +222,10 @@ public class Patient {
     }
 
     public void setGeschlechtName(String geschlechtName) {
-        Logger.log(Logger.LogLevel.DEBUG, "GeschlechtName geändert: " + this.geschlechtName + " -> " + geschlechtName);
-        this.geschlechtName = geschlechtName;
+        if (this.geschlechtName == null || !this.geschlechtName.equals(geschlechtName)) {
+            Logger.log(Logger.LogLevel.DEBUG, "GeschlechtName geändert: " + this.geschlechtName + " -> " + geschlechtName);
+            this.geschlechtName = geschlechtName;
+        }
     }
 
     public int getKrankenkasseID() {
@@ -209,8 +233,10 @@ public class Patient {
     }
 
     public void setKrankenkasseID(int krankenkasseID) {
-        Logger.log(Logger.LogLevel.DEBUG, "KrankenkasseID geändert: " + this.krankenkasseID + " -> " + krankenkasseID);
-        this.krankenkasseID = krankenkasseID;
+        if (this.krankenkasseID == 0 || this.krankenkasseID != krankenkasseID) {
+            Logger.log(Logger.LogLevel.DEBUG, "KrankenkasseID geändert: " + this.krankenkasseID + " -> " + krankenkasseID);
+            this.krankenkasseID = krankenkasseID;
+        }
     }
 
     public String getKrankenkasseName() {
@@ -218,8 +244,10 @@ public class Patient {
     }
 
     public void setKrankenkasseName(String krankenkasseName) {
-        Logger.log(Logger.LogLevel.DEBUG, "KrankenkasseName geändert: " + this.krankenkasseName + " -> " + krankenkasseName);
-        this.krankenkasseName = krankenkasseName;
+        if (this.krankenkasseName == null || !this.krankenkasseName.equals(krankenkasseName)) {
+            Logger.log(Logger.LogLevel.DEBUG, "KrankenkasseName geändert: " + this.krankenkasseName + " -> " + krankenkasseName);
+            this.krankenkasseName = krankenkasseName;
+        }
     }
 
     public String getSonstiges() {
@@ -227,8 +255,10 @@ public class Patient {
     }
 
     public void setSonstiges(String sonstiges) {
-        Logger.log(Logger.LogLevel.DEBUG, "Sonstiges geändert: " + this.sonstiges + " -> " + sonstiges);
-        this.sonstiges = sonstiges;
+        if (this.sonstiges == null || !this.sonstiges.equals(sonstiges)) {
+            Logger.log(Logger.LogLevel.DEBUG, "Sonstiges geändert: " + this.sonstiges + " -> " + sonstiges);
+            this.sonstiges = sonstiges;
+        }
     }
 
     @Override
