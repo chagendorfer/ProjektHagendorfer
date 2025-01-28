@@ -5,13 +5,19 @@ import utils.Logger;
 
 import javax.swing.*;
 import java.awt.*;
-
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDate;
 
+/**
+ * Die Klasse {@code Dialog} repräsentiert ein modales Fenster zur Bearbeitung oder Erstellung von Patientendaten.
+ * <p>
+ * Sie enthält Eingabefelder für die Patienteninformationen und ermöglicht dem Benutzer,
+ * Daten zu speichern oder den Vorgang abzubrechen.
+ */
 public class Dialog extends JDialog {
 
+    /** Das {@link Patient}-Objekt, das im Dialog bearbeitet oder erstellt wird. */
     private Patient patient;
 
     // GUI-Felder
@@ -28,6 +34,13 @@ public class Dialog extends JDialog {
     private final JTextField tfKrankenkasseName = new JTextField(5);
     private final JTextField tfSonstiges = new JTextField(20);
 
+    /**
+     * Erstellt ein neues modales Dialogfenster zur Bearbeitung oder Erstellung eines Patienten.
+     *
+     * @param owner Der übergeordnete Frame, zu dem der Dialog gehört.
+     * @param title Der Titel des Dialogs.
+     * @param p     Das {@link Patient}-Objekt, das bearbeitet werden soll, oder {@code null}, um einen neuen Patienten zu erstellen.
+     */
     public Dialog(Frame owner, String title, Patient p) {
         super(owner, title, true);  // modal
         Logger.log(Logger.LogLevel.INFO, "Dialog geöffnet: " + title);
